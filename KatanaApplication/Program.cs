@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Microsoft.Owin.Hosting;
@@ -39,49 +39,16 @@ namespace KatanaApplication
 
             ConfigureWebApi(app);
 
-            app.UseHelloWorld();
-
-            //app.UseWelcomePage();
-
-            //app.Run(ctx =>
-            //{
-            //    return ctx.Response.WriteAsync("Hello World!");
-            //});
+            app.UseWelcomePage();
         }
 
         private void ConfigureWebApi(IAppBuilder app)
         {
             var config = new HttpConfiguration();
             config.Routes.MapHttpRoute("DefaultApi", "api/{controller}/{id}", new { id = RouteParameter.Optional });
+            config.MapHttpAttributeRoutes();
+            config.Formatters.JsonFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/html"));
             app.UseWebApi(config);
-        }
-    }
-
-    public static class AppBuilderExtensions
-    {
-        public static void UseHelloWorld(this IAppBuilder app)
-        {
-            app.Use<HelloWorldComponenent>();
-        }
-    }
-
-    public class HelloWorldComponenent
-    {
-        private readonly AppFunc _next;
-
-        public HelloWorldComponenent(AppFunc next)
-        {
-            _next = next;
-        }
-
-        public Task Invoke(IDictionary<string, object> environment)
-        {
-            var response = environment["owin.ResponseBody"] as Stream;
-            using (var writer = new StreamWriter(response))
-            {
-                return writer.WriteAsync("Hello!");
-            }
-
         }
     }
 }
